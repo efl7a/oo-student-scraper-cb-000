@@ -10,7 +10,7 @@ class Scraper
 # website = doc.css(".student-card")[0].css("a").attribute("href").value
     students = []
     index = 0
-    doc.css(".student-card").map do |card|
+    doc.css(".student-card").each do |card|
       students[index] = {
         name: card.css(".student-name").text,
         location: card.css(".student-location").text,
@@ -22,7 +22,26 @@ class Scraper
   end
 
   def self.scrape_profile_page(profile_url)
-
+      student = Hash.new
+      doc = Nokogiri::HTML(open(profile_url))
+      #twitter - doc.css(".social-icon-container a")[0].attribute("href").value
+      links = doc.css(".social-icon-container a").map do |link|
+        link.attribute("href").value
+      end
+      links.each do |link|
+        if link.include?("twitter")
+          student[:twitter] = link
+        elsif link.include?("linkedin")
+          student[:linkedin] = link
+        elsif link.include?("github")
+          student[:github] = link
+        else
+          student[:blog] = link
+        end
+      end
+      student[:profile_quote] = doc.css(".profile-quote").text unless nil
+      student[:bio] = doc.css(".description-holder p").text unless nil
+      student
   end
 
 end
